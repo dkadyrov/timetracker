@@ -1,0 +1,24 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up public directory
+        run: |
+          mkdir public
+          cp *.html public/
+          cp *.css public/
+          cp *.js public/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: public
+          path: public

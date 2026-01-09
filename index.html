@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Time Tracker</h1>
+            <div class="timezone-selector">
+                <label for="timezone">Timezone:</label>
+                <select id="timezone">
+                    <option value="local">Local Time</option>
+                    <option value="utc">UTC</option>
+                </select>
+            </div>
+        </header>
+
+        <main>
+            <!-- Time Entry Section -->
+            <section class="entry-section">
+                <div class="entry-form">
+                    <div class="datetime-input">
+                        <label for="entry-datetime">Date & Time:</label>
+                        <input type="datetime-local" id="entry-datetime" step="1">
+                        <button id="use-current-time">Add Entry Now</button>
+                    </div>
+                    
+                    <div id="entry-details" class="entry-details" style="display: none;">
+                        <div class="description-input">
+                            <label for="entry-description">Description:</label>
+                            <input type="text" id="entry-description" placeholder="Enter activity description">
+                            <button id="show-templates" type="button">Use Template</button>
+                        </div>
+                        
+                        <div class="notes-input">
+                            <label for="entry-notes">Notes (optional):</label>
+                            <textarea id="entry-notes" placeholder="Additional notes"></textarea>
+                        </div>
+                        
+                        <div class="entry-actions">
+                            <button id="add-entry">Add Entry</button>
+                            <button id="cancel-entry" type="button" style="display: none;">Cancel</button>
+                            <button id="update-entry" type="button" style="display: none;">Update Entry</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden Templates Modal -->
+                <div id="templates-modal" class="templates-modal" style="display: none;">
+                    <div class="templates-modal-content">
+                        <div class="templates-modal-header">
+                            <h3>Quick Entry Templates</h3>
+                            <button id="close-templates" class="close-button">&times;</button>
+                        </div>
+                        <div class="templates-controls">
+                            <input type="text" id="template-name" placeholder="Template name (e.g., Flight Up)">
+                            <button id="add-template">Add Template</button>
+                        </div>
+                        <div id="templates-list" class="templates-list">
+                            <!-- Templates will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Entries Display Section -->
+            <section class="entries-section">
+                <div class="entries-header">
+                    <h2>Time Entries</h2>
+                    <div class="entries-controls">
+                        <button id="clear-all">Clear All</button>
+                        <button id="download-csv">Download CSV</button>
+                    </div>
+                </div>
+                <div id="entries-list" class="entries-list">
+                    <!-- Entries will be dynamically added here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
