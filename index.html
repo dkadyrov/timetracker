@@ -1,88 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Tracker</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flight Log">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>Flight Log</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --panel:#151822;
+    --panel-2:#1c2030;
+    --text:#f4f5f7;
+    --muted:#8b93a7;
+    --accent:#5b8cff;
+    --danger:#e74c3c;
+    --radius:22px;
+    --gap: clamp(10px, 2vw, 16px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overscroll-behavior:none;
+    user-select:none;
+  }
+  body{
+    display:flex;
+    flex-direction:column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    min-height:100dvh;
+  }
+  header{
+    padding: 14px 18px 4px 18px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+  }
+  header h1{
+    font-size: clamp(18px, 3vw, 24px);
+    margin:0;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  header .sub{
+    color:var(--muted);
+    font-size:13px;
+    font-variant-numeric: tabular-nums;
+  }
+  main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding: 8px var(--gap) var(--gap) var(--gap);
+    gap: var(--gap);
+    min-height:0;
+  }
+  #grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--gap);
+    flex: 1 1 auto;
+  }
+  @media (min-width: 640px){
+    #grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1000px){
+    #grid{ grid-template-columns: repeat(4, 1fr); }
+  }
+  .tile{
+    border:none;
+    border-radius: var(--radius);
+    color:#fff;
+    font-size: clamp(17px, 2.6vw, 24px);
+    font-weight:800;
+    letter-spacing:-0.01em;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 10px 14px;
+    min-height: 84px;
+    cursor:pointer;
+    position:relative;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.28);
+    transition: transform .06s ease, box-shadow .06s ease;
+    -webkit-user-select:none;
+  }
+  .tile:active, .tile.flash{
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.28);
+  }
+  .tile.flash{ filter: brightness(1.25); }
+
+  .tile.select-tile{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:center;
+    gap:6px;
+    padding: 12px 14px;
+  }
+  .tile.select-tile .caption{
+    font-size: clamp(12px, 1.8vw, 14px);
+    font-weight:700;
+    opacity:0.85;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    width:100%;
+    border:none;
+    border-radius:12px;
+    background: rgba(255,255,255,0.18);
+    color:#fff;
+    font-size: clamp(15px, 2.2vw, 19px);
+    font-weight:700;
+    padding: 10px 12px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat:no-repeat;
+    background-position: right 10px center;
+    background-size: 18px;
+  }
+  select:focus{ outline: 2px solid rgba(255,255,255,0.6); }
+
+  #logbar{
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    max-height: 34vh;
+  }
+  #logbar .logbar-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  #logbar h2{
+    margin:0;
+    font-size:14px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  #entryCount{
+    color:var(--muted);
+    font-size:13px;
+    font-variant-numeric: tabular-nums;
+  }
+  #entries{
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column-reverse;
+    gap:6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .entry{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background: var(--panel-2);
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:14px;
+  }
+  .entry .ctx{ font-weight:700; }
+  .entry .ts{ color:var(--muted); font-variant-numeric: tabular-nums; font-size:12.5px; }
+  .empty-state{
+    color:var(--muted);
+    font-size:14px;
+    text-align:center;
+    padding:14px 0;
+  }
+  #actions{
+    display:flex;
+    gap: var(--gap);
+  }
+  .action-btn{
+    flex:1;
+    border:none;
+    border-radius:16px;
+    padding:14px 10px;
+    font-size:15px;
+    font-weight:700;
+    color:#fff;
+    background: var(--panel-2);
+    cursor:pointer;
+  }
+  .action-btn.primary{ background: var(--accent); }
+  .action-btn.danger{ background: transparent; color: var(--danger); border: 1px solid rgba(231,76,60,0.45); }
+  .action-btn:active{ filter: brightness(1.15); }
+
+  #toast{
+    position:fixed;
+    left:50%;
+    bottom: calc(env(safe-area-inset-bottom) + 18px);
+    transform: translateX(-50%) translateY(20px);
+    background: #23283a;
+    color:#fff;
+    padding:10px 16px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .2s ease, transform .2s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    z-index:50;
+    white-space:nowrap;
+  }
+  #toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Time Tracker</h1>
-            <div class="timezone-selector">
-                <label for="timezone">Timezone:</label>
-                <select id="timezone">
-                    <option value="local">Local Time</option>
-                    <option value="utc">UTC</option>
-                </select>
-            </div>
-        </header>
 
-        <main>
-            <!-- Time Entry Section -->
-            <section class="entry-section">
-                <div class="entry-form">
-                    <div class="datetime-input">
-                        <label for="entry-datetime">Date & Time:</label>
-                        <input type="datetime-local" id="entry-datetime" step="1">
-                        <button id="use-current-time">Add Entry Now</button>
-                    </div>
-                    
-                    <div id="entry-details" class="entry-details" style="display: none;">
-                        <div class="description-input">
-                            <label for="entry-description">Description:</label>
-                            <input type="text" id="entry-description" placeholder="Enter activity description">
-                            <button id="show-templates" type="button">Use Template</button>
-                        </div>
-                        
-                        <div class="notes-input">
-                            <label for="entry-notes">Notes (optional):</label>
-                            <textarea id="entry-notes" placeholder="Additional notes"></textarea>
-                        </div>
-                        
-                        <div class="entry-actions">
-                            <button id="add-entry">Add Entry</button>
-                            <button id="cancel-entry" type="button" style="display: none;">Cancel</button>
-                            <button id="update-entry" type="button" style="display: none;">Update Entry</button>
-                        </div>
-                    </div>
-                </div>
+<header>
+  <h1 id="appTitle">Flight Log</h1>
+  <div class="sub" id="clock">--:--:--</div>
+</header>
 
-                <!-- Hidden Templates Modal -->
-                <div id="templates-modal" class="templates-modal" style="display: none;">
-                    <div class="templates-modal-content">
-                        <div class="templates-modal-header">
-                            <h3>Quick Entry Templates</h3>
-                            <button id="close-templates" class="close-button">&times;</button>
-                        </div>
-                        <div class="templates-controls">
-                            <input type="text" id="template-name" placeholder="Template name (e.g., Flight Up)">
-                            <button id="add-template">Add Template</button>
-                        </div>
-                        <div id="templates-list" class="templates-list">
-                            <!-- Templates will be dynamically added here -->
-                        </div>
-                    </div>
-                </div>
-            </section>
+<main>
+  <div id="grid"></div>
 
-            <!-- Entries Display Section -->
-            <section class="entries-section">
-                <div class="entries-header">
-                    <h2>Time Entries</h2>
-                    <div class="entries-controls">
-                        <button id="clear-all">Clear All</button>
-                        <button id="download-csv">Download CSV</button>
-                    </div>
-                </div>
-                <div id="entries-list" class="entries-list">
-                    <!-- Entries will be dynamically added here -->
-                </div>
-            </section>
-        </main>
+  <div id="logbar">
+    <div class="logbar-head">
+      <h2>Log</h2>
+      <div id="entryCount">0 entries</div>
     </div>
+    <div id="entries"></div>
+  </div>
 
-    <script src="script.js"></script>
+  <div id="actions">
+    <button class="action-btn" id="undoBtn">Undo Last</button>
+    <button class="action-btn primary" id="shareBtn">Share / Save CSV</button>
+    <button class="action-btn danger" id="clearBtn">Clear Log</button>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "flightlog_entries_v1";
+  var entries = [];
+  var gridEl = document.getElementById("grid");
+  var entriesEl = document.getElementById("entries");
+  var entryCountEl = document.getElementById("entryCount");
+  var toastEl = document.getElementById("toast");
+  var clockEl = document.getElementById("clock");
+
+  function loadEntries(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      entries = raw ? JSON.parse(raw) : [];
+    }catch(e){ entries = []; }
+  }
+  function saveEntries(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); }catch(e){}
+  }
+
+  function csvEscape(val){
+    var s = String(val);
+    if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  function toCSV(){
+    var lines = ["timestamp,context"];
+    entries.forEach(function(e){
+      lines.push(csvEscape(e.ts) + "," + csvEscape(e.ctx));
+    });
+    return lines.join("\n") + "\n";
+  }
+
+  function fmtDisplayTime(iso){
+    var d = new Date(iso);
+    return d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+
+  function renderEntries(){
+    entryCountEl.textContent = entries.length + (entries.length === 1 ? " entry" : " entries");
+    if (entries.length === 0){
+      entriesEl.innerHTML = '<div class="empty-state">No entries yet — tap a button above to log a timestamp.</div>';
+      return;
+    }
+    var html = "";
+    // entries are stored oldest->newest; container is column-reverse so append in same order
+    entries.forEach(function(e){
+      html += '<div class="entry"><span class="ctx">' + escapeHtml(e.ctx) + '</span><span class="ts">' + fmtDisplayTime(e.ts) + '</span></div>';
+    });
+    entriesEl.innerHTML = html;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 1800);
+  }
+
+  function logEntry(context, tileEl){
+    var ts = new Date().toISOString();
+    entries.push({ ts: ts, ctx: context });
+    saveEntries();
+    renderEntries();
+    if (tileEl){
+      tileEl.classList.add("flash");
+      setTimeout(function(){ tileEl.classList.remove("flash"); }, 180);
+    }
+    if (navigator.vibrate) { try{ navigator.vibrate(15); }catch(e){} }
+    showToast("Logged: " + context);
+  }
+
+  function buildGrid(config){
+    document.getElementById("appTitle").textContent = config.appName || "Flight Log";
+    document.title = config.appName || "Flight Log";
+    gridEl.innerHTML = "";
+
+    (config.buttons || []).forEach(function(btn){
+      var el = document.createElement("button");
+      el.className = "tile";
+      el.style.background = btn.color || "#3498db";
+      el.textContent = btn.label;
+      el.addEventListener("click", function(){
+        logEntry(btn.context || btn.label, el);
+      });
+      gridEl.appendChild(el);
+    });
+
+    if (config.droneModels && config.droneModels.length){
+      var wrap = document.createElement("div");
+      wrap.className = "tile select-tile";
+      wrap.style.background = "#34495e";
+
+      var caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = "Drone Model";
+      wrap.appendChild(caption);
+
+      var select = document.createElement("select");
+      var placeholder = document.createElement("option");
+      placeholder.textContent = "Select model…";
+      placeholder.value = "";
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      select.appendChild(placeholder);
+
+      config.droneModels.forEach(function(model){
+        var opt = document.createElement("option");
+        opt.value = model;
+        opt.textContent = model;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", function(){
+        if (!select.value) return;
+        logEntry("Drone: " + select.value, wrap);
+        setTimeout(function(){ select.value = ""; }, 400);
+      });
+
+      wrap.appendChild(select);
+      gridEl.appendChild(wrap);
+    }
+  }
+
+  function loadConfig(){
+    fetch("buttons.json", {cache:"no-store"})
+      .then(function(r){ return r.json(); })
+      .then(function(config){ buildGrid(config); })
+      .catch(function(){
+        buildGrid({
+          appName:"Flight Log",
+          buttons:[
+            {label:"Takeoff", context:"Takeoff", color:"#3498db"},
+            {label:"Landing", context:"Landing", color:"#e67e22"}
+          ],
+          droneModels:["Default Drone"]
+        });
+        showToast("Using default buttons (buttons.json not found)");
+      });
+  }
+
+  async function shareOrDownload(){
+    if (entries.length === 0){
+      showToast("Nothing to export yet");
+      return;
+    }
+    var csv = toCSV();
+    var fileName = "flightlog_" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".csv";
+    var file;
+    try{
+      file = new File([csv], fileName, {type:"text/csv"});
+    }catch(e){
+      file = null;
+    }
+
+    if (navigator.canShare && file && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({
+          files:[file],
+          title: fileName,
+          text: "Flight log export"
+        });
+        return;
+      }catch(err){
+        // user cancelled share or it failed — fall through to download
+        if (err && err.name === "AbortError") return;
+      }
+    }
+
+    // Fallback: trigger a download (PC / unsupported browsers)
+    var blob = new Blob([csv], {type:"text/csv"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    showToast("CSV downloaded");
+  }
+
+  document.getElementById("shareBtn").addEventListener("click", shareOrDownload);
+
+  document.getElementById("clearBtn").addEventListener("click", function(){
+    if (entries.length === 0) return;
+    if (confirm("Clear all " + entries.length + " logged entries? This cannot be undone.")){
+      entries = [];
+      saveEntries();
+      renderEntries();
+      showToast("Log cleared");
+    }
+  });
+
+  document.getElementById("undoBtn").addEventListener("click", function(){
+    if (entries.length === 0) return;
+    var removed = entries.pop();
+    saveEntries();
+    renderEntries();
+    showToast("Removed: " + removed.ctx);
+  });
+
+  function tickClock(){
+    clockEl.textContent = new Date().toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  loadEntries();
+  renderEntries();
+  loadConfig();
+
+  if ("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
+})();
+</script>
 </body>
 </html>

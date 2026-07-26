@@ -1,0 +1,21 @@
+{
+  "appName": "Flight Log",
+  "buttons": [
+    { "label": "Power On",     "context": "Power On",       "color": "#2ecc71" },
+    { "label": "Takeoff",      "context": "Takeoff",        "color": "#3498db" },
+    { "label": "Landing",      "context": "Landing",        "color": "#e67e22" },
+    { "label": "Battery Swap", "context": "Battery Swap",   "color": "#f1c40f" },
+    { "label": "RTH",          "context": "Return to Home", "color": "#9b59b6" },
+    { "label": "Incident",     "context": "Incident",       "color": "#e74c3c" },
+    { "label": "Break",        "context": "Break",          "color": "#1abc9c" },
+    { "label": "Power Off",    "context": "Power Off",      "color": "#7f8c8d" },
+    { "label": "Mission ID",   "context": "Mission ID",     "color": "#34495e" }
+  ],
+  "droneModels": [
+    "DJI Mavic 3",
+    "DJI Matrice 300",
+    "DJI Phantom 4 RTK",
+    "Autel EVO II",
+    "Custom Build"
+  ]
+}
