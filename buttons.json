@@ -8,9 +8,10 @@
     { "label": "RTH",          "context": "Return to Home", "color": "#9b59b6" },
     { "label": "Incident",     "context": "Incident",       "color": "#e74c3c" },
     { "label": "Break",        "context": "Break",          "color": "#1abc9c" },
-    { "label": "Power Off",    "context": "Power Off",      "color": "#7f8c8d" },
-    { "label": "Mission ID",   "context": "Mission ID",     "color": "#34495e" }
+    { "label": "Power Off",    "context": "Power Off",      "color": "#7f8c8d" }
   ],
+  "customButtonLabel": "Custom…",
+  "customButtonColor": "#546e7a",
   "droneModels": [
     "DJI Mavic 3",
     "DJI Matrice 300",
