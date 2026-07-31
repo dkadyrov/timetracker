@@ -1,22 +1,49 @@
 {
   "appName": "Flight Log",
+  "widgets": [
+    {
+      "key": "stepper",
+      "type": "stepper",
+      "title": "Stepper",
+      "start": 1,
+      "min": 0
+    },
+    {
+      "key": "selector",
+      "type": "select",
+      "title": "Selector",
+      "placeholder": "Select...",
+      "lock": true,
+      "options": [
+        "Select 1",
+        "Select 2",
+        "Select 3",
+        "Select 4"
+      ]
+    },
+    {
+      "key": "toggle",
+      "type": "toggle",
+      "title": "Toggle",
+      "onLabel": "On",
+      "offLabel": "Off",
+      "default": false
+    },
+    {
+      "key": "text",
+      "type": "text",
+      "title": "Text",
+      "placeholder": "Type here...",
+      "maxlength": 40
+    }
+  ],
   "buttons": [
-    { "label": "Power On",     "context": "Power On",       "color": "#2ecc71" },
-    { "label": "Takeoff",      "context": "Takeoff",        "color": "#3498db" },
-    { "label": "Landing",      "context": "Landing",        "color": "#e67e22" },
-    { "label": "Battery Swap", "context": "Battery Swap",   "color": "#f1c40f" },
-    { "label": "RTH",          "context": "Return to Home", "color": "#9b59b6" },
-    { "label": "Incident",     "context": "Incident",       "color": "#e74c3c" },
-    { "label": "Break",        "context": "Break",          "color": "#1abc9c" },
-    { "label": "Power Off",    "context": "Power Off",      "color": "#7f8c8d" }
+    {
+      "label": "Button",
+      "context": "Button",
+      "color": "#2ecc71"
+    }
   ],
   "customButtonLabel": "Custom…",
-  "customButtonColor": "#546e7a",
-  "droneModels": [
-    "DJI Mavic 3",
-    "DJI Matrice 300",
-    "DJI Phantom 4 RTK",
-    "Autel EVO II",
-    "Custom Build"
-  ]
+  "customButtonColor": "#546e7a"
 }

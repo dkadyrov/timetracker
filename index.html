@@ -6,398 +6,27 @@
 <meta name="theme-color" content="#0b0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Flight Log">
+<meta name="apple-mobile-web-app-title" content="Logger">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
-<title>Flight Log</title>
-<style>
-  :root{
-    --bg:#0b0d12;
-    --panel:#151822;
-    --panel-2:#1c2030;
-    --text:#f4f5f7;
-    --muted:#8b93a7;
-    --accent:#5b8cff;
-    --danger:#e74c3c;
-    --radius:22px;
-    --gap: clamp(10px, 2vw, 16px);
-  }
-  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation;}
-  html,body{
-    height:100dvh;
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    overflow:hidden;
-    overscroll-behavior:none;
-    user-select:none;
-    touch-action: manipulation;
-  }
-  body{
-    display:flex;
-    flex-direction:column;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    height:100dvh;
-  }
-  header{
-    padding: 14px 18px 4px 18px;
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:10px;
-  }
-  header h1{
-    font-size: clamp(18px, 3vw, 24px);
-    margin:0;
-    font-weight:800;
-    letter-spacing:-0.02em;
-  }
-  header .sub{
-    color:var(--muted);
-    font-size:13px;
-    font-variant-numeric: tabular-nums;
-  }
-  main{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    padding: 8px var(--gap) var(--gap) var(--gap);
-    gap: var(--gap);
-    min-height:0;
-    overflow:hidden;
-  }
-
-  /* ---------- Control bar: Mission ID + Drone Model ---------- */
-  #controls{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--gap);
-  }
-  .control-tile{
-    background: var(--panel-2);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    justify-content:center;
-    min-height: 60px;
-  }
-  .control-tile .caption{
-    font-size: clamp(11px, 1.6vw, 13px);
-    font-weight:700;
-    opacity:0.7;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-  }
-  #missionStepper{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  #missionStepper button{
-    border:none;
-    background: rgba(255,255,255,0.14);
-    color:#fff;
-    font-size:22px;
-    font-weight:800;
-    width:38px;
-    height:38px;
-    border-radius:10px;
-    cursor:pointer;
-    line-height:1;
-    flex:none;
-  }
-  #missionStepper button:active{ filter:brightness(1.3); }
-  #missionValue{
-    flex:1;
-    text-align:center;
-    font-size: clamp(20px, 3vw, 26px);
-    font-weight:800;
-    font-variant-numeric: tabular-nums;
-  }
-
-  #droneTile select{
-    appearance:none;
-    -webkit-appearance:none;
-    width:100%;
-    border:none;
-    border-radius:12px;
-    background: rgba(255,255,255,0.18);
-    color:#fff;
-    font-size: clamp(16px, 2.2vw, 18px);
-    font-weight:700;
-    padding: 9px 12px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
-    background-repeat:no-repeat;
-    background-position: right 10px center;
-    background-size: 18px;
-  }
-  #droneTile select:focus{ outline: 2px solid rgba(255,255,255,0.6); }
-
-  #droneLocked{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    background: rgba(255,255,255,0.1);
-    border-radius:12px;
-    padding: 9px 10px 9px 12px;
-  }
-  #droneLocked .name{
-    font-size: clamp(15px, 2.2vw, 18px);
-    font-weight:800;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  #droneLocked button{
-    border:none;
-    background: rgba(255,255,255,0.16);
-    color:#fff;
-    font-size:12.5px;
-    font-weight:700;
-    padding:7px 10px;
-    border-radius:9px;
-    cursor:pointer;
-    flex:none;
-  }
-  #droneLocked button:active{ filter:brightness(1.3); }
-  .hidden{ display:none !important; }
-
-  /* ---------- Button grid ---------- */
-  #grid{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 1fr;
-    gap: var(--gap);
-    flex: 1 1 auto;
-    min-height:0;
-    overflow:hidden;
-  }
-  @media (min-width: 640px){
-    #grid{ grid-template-columns: repeat(3, 1fr); }
-  }
-  @media (min-width: 1000px){
-    #grid{ grid-template-columns: repeat(4, 1fr); }
-  }
-  .tile{
-    border:none;
-    border-radius: var(--radius);
-    color:#fff;
-    font-size: clamp(17px, 2.6vw, 24px);
-    font-weight:800;
-    letter-spacing:-0.01em;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding: 10px 14px;
-    min-height: 44px;
-    cursor:pointer;
-    position:relative;
-    box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.28);
-    transition: transform .06s ease, box-shadow .06s ease;
-    -webkit-user-select:none;
-  }
-  .tile:active, .tile.flash{
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.28);
-  }
-  .tile.flash{ filter: brightness(1.25); }
-
-  #logbar{
-    background: var(--panel);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    height: 26vh;
-    flex: 0 0 26vh;
-  }
-  #logbar .logbar-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  #logbar h2{
-    margin:0;
-    font-size:14px;
-    color:var(--muted);
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-  }
-  #entryCount{
-    color:var(--muted);
-    font-size:13px;
-    font-variant-numeric: tabular-nums;
-  }
-  #entries{
-    overflow-y:auto;
-    display:flex;
-    flex-direction:column-reverse;
-    gap:6px;
-    flex:1 1 auto;
-    min-height:0;
-    -webkit-overflow-scrolling: touch;
-  }
-  .entry{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    background: var(--panel-2);
-    border-radius:10px;
-    padding:8px 10px;
-    font-size:14px;
-  }
-  .entry .meta{ display:flex; flex-direction:column; min-width:0; }
-  .entry .ctx{ font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .entry .sub{ color:var(--muted); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .entry .ts{ color:var(--muted); font-variant-numeric: tabular-nums; font-size:12.5px; flex:none; }
-  .empty-state{
-    color:var(--muted);
-    font-size:14px;
-    text-align:center;
-    padding:14px 0;
-  }
-  #actions{
-    display:flex;
-    gap: var(--gap);
-  }
-  .action-btn{
-    flex:1;
-    border:none;
-    border-radius:16px;
-    padding:14px 10px;
-    font-size:15px;
-    font-weight:700;
-    color:#fff;
-    background: var(--panel-2);
-    cursor:pointer;
-  }
-  .action-btn.primary{ background: var(--accent); }
-  .action-btn.danger{ background: transparent; color: var(--danger); border: 1px solid rgba(231,76,60,0.45); }
-  .action-btn:active{ filter: brightness(1.15); }
-
-  #toast{
-    position:fixed;
-    left:50%;
-    bottom: calc(env(safe-area-inset-bottom) + 18px);
-    transform: translateX(-50%) translateY(20px);
-    background: #23283a;
-    color:#fff;
-    padding:10px 16px;
-    border-radius:999px;
-    font-size:14px;
-    font-weight:600;
-    opacity:0;
-    pointer-events:none;
-    transition: opacity .2s ease, transform .2s ease;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-    z-index:50;
-    white-space:nowrap;
-  }
-  #toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
-
-  /* ---------- Custom text modal ---------- */
-  #modalOverlay{
-    position:fixed;
-    inset:0;
-    background: rgba(0,0,0,0.55);
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    z-index:100;
-    opacity:0;
-    pointer-events:none;
-    transition: opacity .18s ease;
-  }
-  #modalOverlay.show{ opacity:1; pointer-events:auto; }
-  @media (min-width:640px){
-    #modalOverlay{ align-items:center; }
-  }
-  #modalCard{
-    background: var(--panel);
-    width:100%;
-    max-width:480px;
-    border-radius: 22px 22px 0 0;
-    padding: 18px 18px calc(env(safe-area-inset-bottom) + 18px) 18px;
-    transform: translateY(16px);
-    transition: transform .18s ease;
-  }
-  #modalOverlay.show #modalCard{ transform: translateY(0); }
-  @media (min-width:640px){
-    #modalCard{ border-radius:22px; padding:18px; }
-  }
-  #modalCard h3{
-    margin:0 0 12px 0;
-    font-size:16px;
-    font-weight:800;
-  }
-  #modalInput{
-    width:100%;
-    border:none;
-    border-radius:12px;
-    background: rgba(255,255,255,0.1);
-    color:#fff;
-    font-size:16px;
-    padding:12px;
-    font-family:inherit;
-    resize:none;
-  }
-  #modalActions{
-    display:flex;
-    gap:10px;
-    margin-top:14px;
-  }
-  #modalActions button{
-    flex:1;
-    border:none;
-    border-radius:14px;
-    padding:12px;
-    font-size:15px;
-    font-weight:700;
-    color:#fff;
-    cursor:pointer;
-  }
-  #modalCancel{ background: var(--panel-2); }
-  #modalSubmit{ background: var(--accent); }
-</style>
+<title>Logger</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header>
-  <h1 id="appTitle">Flight Log</h1>
-  <div class="sub" id="clock">--:--:--</div>
-</header>
+<button id="menuBtn" aria-label="Menu" aria-haspopup="true" aria-expanded="false">&#9776;</button>
+
+<div id="menuPanel" role="menu">
+  <button id="undoBtn" role="menuitem">Undo Last</button>
+  <button id="shareBtn" role="menuitem">Share / Save CSV</button>
+  <button id="clearBtn" class="danger" role="menuitem">Clear Log</button>
+  <div class="menu-divider"></div>
+  <button id="themeToggleBtn" role="menuitem">Light Mode</button>
+</div>
 
 <main>
-  <div id="controls">
-    <div class="control-tile" id="missionTile">
-      <div class="caption">Mission ID</div>
-      <div id="missionStepper">
-        <button id="missionDec" aria-label="Decrease mission ID">–</button>
-        <div id="missionValue">1</div>
-        <button id="missionInc" aria-label="Increase mission ID">+</button>
-      </div>
-    </div>
-
-    <div class="control-tile" id="droneTile">
-      <div class="caption">Drone Model</div>
-      <select id="droneSelect">
-        <option value="" disabled selected>Select model…</option>
-      </select>
-      <div id="droneLocked" class="hidden">
-        <span class="name" id="droneLockedName"></span>
-        <button id="droneChangeBtn">Change</button>
-      </div>
-    </div>
-  </div>
+  <div id="controls"></div>
 
   <div id="grid"></div>
 
@@ -407,12 +36,6 @@
       <div id="entryCount">0 entries</div>
     </div>
     <div id="entries"></div>
-  </div>
-
-  <div id="actions">
-    <button class="action-btn" id="undoBtn">Undo Last</button>
-    <button class="action-btn primary" id="shareBtn">Share / Save CSV</button>
-    <button class="action-btn danger" id="clearBtn">Clear Log</button>
   </div>
 </main>
 
@@ -433,23 +56,18 @@
 (function(){
   "use strict";
 
-  var ENTRIES_KEY = "flightlog_entries_v2";
-  var MISSION_KEY = "flightlog_mission_v1";
-  var DRONE_KEY = "flightlog_drone_v1";
+  var ENTRIES_KEY = "log_entries_v3";
+  var WIDGETS_KEY = "log_widgets_v1";
 
   var entries = [];
-  var missionId = 1;
-  var droneModel = "";
+  var widgetState = {};
+  var widgetsConfig = [];
 
+  var controlsEl = document.getElementById("controls");
   var gridEl = document.getElementById("grid");
   var entriesEl = document.getElementById("entries");
   var entryCountEl = document.getElementById("entryCount");
   var toastEl = document.getElementById("toast");
-  var clockEl = document.getElementById("clock");
-  var missionValueEl = document.getElementById("missionValue");
-  var droneSelectEl = document.getElementById("droneSelect");
-  var droneLockedEl = document.getElementById("droneLocked");
-  var droneLockedNameEl = document.getElementById("droneLockedName");
 
   var modalOverlay = document.getElementById("modalOverlay");
   var modalInput = document.getElementById("modalInput");
@@ -464,21 +82,14 @@
   function saveEntries(){
     try{ localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries)); }catch(e){}
   }
-  function loadMission(){
+  function loadWidgetState(){
     try{
-      var raw = localStorage.getItem(MISSION_KEY);
-      missionId = raw !== null ? parseInt(raw, 10) : 1;
-      if (isNaN(missionId)) missionId = 1;
-    }catch(e){ missionId = 1; }
+      var raw = localStorage.getItem(WIDGETS_KEY);
+      widgetState = raw ? JSON.parse(raw) : {};
+    }catch(e){ widgetState = {}; }
   }
-  function saveMission(){
-    try{ localStorage.setItem(MISSION_KEY, String(missionId)); }catch(e){}
-  }
-  function loadDrone(){
-    try{ droneModel = localStorage.getItem(DRONE_KEY) || ""; }catch(e){ droneModel = ""; }
-  }
-  function saveDrone(){
-    try{ localStorage.setItem(DRONE_KEY, droneModel); }catch(e){}
+  function saveWidgetState(){
+    try{ localStorage.setItem(WIDGETS_KEY, JSON.stringify(widgetState)); }catch(e){}
   }
 
   /* ---------- CSV ---------- */
@@ -488,14 +99,14 @@
     return s;
   }
   function toCSV(){
-    var lines = ["timestamp,mission_id,drone_model,button"];
+    var widgetKeys = widgetsConfig.map(function(w){ return w.key; });
+    var lines = [["timestamp","button"].concat(widgetKeys).map(csvEscape).join(",")];
     entries.forEach(function(e){
-      lines.push([
-        csvEscape(e.ts),
-        csvEscape(e.missionId),
-        csvEscape(e.drone || ""),
-        csvEscape(e.ctx)
-      ].join(","));
+      var row = [e.ts, e.ctx].concat(widgetKeys.map(function(k){
+        var v = e.widgets && e.widgets[k];
+        return v === undefined ? "" : v;
+      }));
+      lines.push(row.map(csvEscape).join(","));
     });
     return lines.join("\n") + "\n";
   }
@@ -514,8 +125,16 @@
     }
     var html = "";
     entries.forEach(function(e){
-      var subParts = ["Mission " + e.missionId];
-      if (e.drone) subParts.push(e.drone);
+      var subParts = [];
+      widgetsConfig.forEach(function(w){
+        var v = e.widgets && e.widgets[w.key];
+        if (w.type === "toggle"){
+          if (v) subParts.push(w.title || w.key);
+          return;
+        }
+        if (v === undefined || v === "" || v === null) return;
+        subParts.push(w.type === "stepper" ? (w.title || w.key) + " " + v : v);
+      });
       html += '<div class="entry">' +
                 '<div class="meta">' +
                   '<span class="ctx">' + escapeHtml(e.ctx) + '</span>' +
@@ -525,6 +144,7 @@
               '</div>';
     });
     entriesEl.innerHTML = html;
+    entriesEl.scrollTop = entriesEl.scrollHeight;
   }
 
   function escapeHtml(s){
@@ -540,50 +160,179 @@
     showToast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 1800);
   }
 
-  /* ---------- mission id stepper ---------- */
-  function renderMission(){
-    missionValueEl.textContent = missionId;
+  /* ---------- widgets (stepper / select / toggle / text) ---------- */
+  function initWidgetDefaults(widgets){
+    widgets.forEach(function(w){
+      if (widgetState[w.key] !== undefined) return;
+      if (w.type === "stepper") widgetState[w.key] = (w.start !== undefined ? w.start : 1);
+      else if (w.type === "toggle") widgetState[w.key] = !!w.default;
+      else widgetState[w.key] = "";
+    });
   }
-  document.getElementById("missionInc").addEventListener("click", function(){
-    missionId += 1;
-    saveMission();
-    renderMission();
-  });
-  document.getElementById("missionDec").addEventListener("click", function(){
-    missionId = Math.max(0, missionId - 1);
-    saveMission();
-    renderMission();
-  });
 
-  /* ---------- drone model (locks once selected) ---------- */
-  function renderDrone(){
-    if (droneModel){
-      droneSelectEl.classList.add("hidden");
-      droneLockedEl.classList.remove("hidden");
-      droneLockedNameEl.textContent = droneModel;
-    } else {
-      droneSelectEl.classList.remove("hidden");
-      droneLockedEl.classList.add("hidden");
-      droneSelectEl.value = "";
-    }
+  function buildStepperWidget(tile, w){
+    var wrap = document.createElement("div");
+    wrap.className = "stepper";
+
+    var dec = document.createElement("button");
+    dec.type = "button";
+    dec.textContent = "–";
+    dec.setAttribute("aria-label", "Decrease " + (w.title || w.key));
+
+    var val = document.createElement("div");
+    val.className = "stepper-value";
+
+    var inc = document.createElement("button");
+    inc.type = "button";
+    inc.textContent = "+";
+    inc.setAttribute("aria-label", "Increase " + (w.title || w.key));
+
+    function render(){ val.textContent = widgetState[w.key]; }
+
+    var step = w.step || 1;
+    dec.addEventListener("click", function(){
+      var min = (w.min !== undefined) ? w.min : 0;
+      widgetState[w.key] = Math.max(min, (widgetState[w.key] || 0) - step);
+      saveWidgetState();
+      render();
+    });
+    inc.addEventListener("click", function(){
+      var next = (widgetState[w.key] || 0) + step;
+      if (w.max !== undefined) next = Math.min(w.max, next);
+      widgetState[w.key] = next;
+      saveWidgetState();
+      render();
+    });
+
+    wrap.appendChild(dec);
+    wrap.appendChild(val);
+    wrap.appendChild(inc);
+    tile.appendChild(wrap);
+    render();
   }
-  droneSelectEl.addEventListener("change", function(){
-    if (!droneSelectEl.value) return;
-    droneModel = droneSelectEl.value;
-    saveDrone();
-    renderDrone();
-    showToast("Drone set: " + droneModel);
-  });
-  document.getElementById("droneChangeBtn").addEventListener("click", function(){
-    droneModel = "";
-    saveDrone();
-    renderDrone();
-  });
+
+  function buildSelectWidget(tile, w){
+    var selectEl = document.createElement("select");
+    var placeholderOpt = document.createElement("option");
+    placeholderOpt.value = "";
+    placeholderOpt.disabled = true;
+    placeholderOpt.textContent = w.placeholder || "Select…";
+    selectEl.appendChild(placeholderOpt);
+    (w.options || []).forEach(function(opt){
+      var o = document.createElement("option");
+      o.value = opt;
+      o.textContent = opt;
+      selectEl.appendChild(o);
+    });
+
+    var doLock = w.lock !== false;
+    var lockWrap, lockName, changeBtn;
+    if (doLock){
+      lockWrap = document.createElement("div");
+      lockWrap.className = "widget-locked hidden";
+      lockName = document.createElement("span");
+      lockName.className = "name";
+      changeBtn = document.createElement("button");
+      changeBtn.type = "button";
+      changeBtn.textContent = "Change";
+      lockWrap.appendChild(lockName);
+      lockWrap.appendChild(changeBtn);
+    }
+
+    function render(){
+      var value = widgetState[w.key] || "";
+      if (doLock && value){
+        selectEl.classList.add("hidden");
+        lockWrap.classList.remove("hidden");
+        lockName.textContent = value;
+      } else {
+        selectEl.classList.remove("hidden");
+        if (lockWrap) lockWrap.classList.add("hidden");
+        selectEl.value = value;
+      }
+    }
+
+    selectEl.addEventListener("change", function(){
+      if (!selectEl.value) return;
+      widgetState[w.key] = selectEl.value;
+      saveWidgetState();
+      render();
+      showToast((w.title || w.key) + " set: " + selectEl.value);
+    });
+    if (changeBtn){
+      changeBtn.addEventListener("click", function(){
+        widgetState[w.key] = "";
+        saveWidgetState();
+        render();
+      });
+    }
+
+    tile.appendChild(selectEl);
+    if (lockWrap) tile.appendChild(lockWrap);
+    render();
+  }
+
+  function buildToggleWidget(tile, w){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "toggle-btn";
+
+    function render(){
+      var on = !!widgetState[w.key];
+      btn.classList.toggle("on", on);
+      btn.textContent = on ? (w.onLabel || "On") : (w.offLabel || "Off");
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    btn.addEventListener("click", function(){
+      widgetState[w.key] = !widgetState[w.key];
+      saveWidgetState();
+      render();
+    });
+
+    tile.appendChild(btn);
+    render();
+  }
+
+  function buildTextWidget(tile, w){
+    var input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = w.placeholder || "";
+    if (w.maxlength) input.maxLength = w.maxlength;
+    input.value = widgetState[w.key] || "";
+
+    input.addEventListener("input", function(){
+      widgetState[w.key] = input.value;
+      saveWidgetState();
+    });
+
+    tile.appendChild(input);
+  }
+
+  function buildControls(widgets){
+    controlsEl.innerHTML = "";
+    widgets.forEach(function(w){
+      var tile = document.createElement("div");
+      tile.className = "control-tile";
+      tile.dataset.key = w.key;
+
+      var caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = w.title || w.key;
+      tile.appendChild(caption);
+
+      if (w.type === "stepper") buildStepperWidget(tile, w);
+      else if (w.type === "select") buildSelectWidget(tile, w);
+      else if (w.type === "toggle") buildToggleWidget(tile, w);
+      else if (w.type === "text") buildTextWidget(tile, w);
+
+      controlsEl.appendChild(tile);
+    });
+  }
 
   /* ---------- logging ---------- */
   function logEntry(context, tileEl){
     var ts = new Date().toISOString();
-    entries.push({ ts: ts, missionId: missionId, drone: droneModel, ctx: context });
+    entries.push({ ts: ts, ctx: context, widgets: Object.assign({}, widgetState) });
     saveEntries();
     renderEntries();
     if (tileEl){
@@ -617,10 +366,9 @@
     if (e.target === modalOverlay) closeModal();
   });
 
-  /* ---------- build grid from config ---------- */
+  /* ---------- build grid + widgets from config ---------- */
   function buildGrid(config){
-    document.getElementById("appTitle").textContent = config.appName || "Flight Log";
-    document.title = config.appName || "Flight Log";
+    document.title = config.appName || "Logger";
     gridEl.innerHTML = "";
 
     (config.buttons || []).forEach(function(btn){
@@ -642,15 +390,10 @@
     customEl.addEventListener("click", openModal);
     gridEl.appendChild(customEl);
 
-    // populate drone dropdown
-    droneSelectEl.innerHTML = '<option value="" disabled selected>Select model…</option>';
-    (config.droneModels || []).forEach(function(model){
-      var opt = document.createElement("option");
-      opt.value = model;
-      opt.textContent = model;
-      droneSelectEl.appendChild(opt);
-    });
-    renderDrone();
+    widgetsConfig = config.widgets || [];
+    initWidgetDefaults(widgetsConfig);
+    buildControls(widgetsConfig);
+    renderEntries();
   }
 
   function loadConfig(){
@@ -659,25 +402,33 @@
       .then(function(config){ buildGrid(config); })
       .catch(function(){
         buildGrid({
-          appName:"Flight Log",
+          appName:"Logger",
           buttons:[
-            {label:"Takeoff", context:"Takeoff", color:"#3498db"},
-            {label:"Landing", context:"Landing", color:"#e67e22"}
+            // {label:"Takeoff", context:"Takeoff", color:"#3498db"},
+            // {label:"Landing", context:"Landing", color:"#e67e22"}
           ],
-          droneModels:["Default Drone"]
+          widgets:[]
         });
         showToast("Using default buttons (buttons.json not found)");
       });
   }
 
   /* ---------- share / export ---------- */
+  function isMobileOrTablet(){
+    var ua = navigator.userAgent || navigator.vendor || "";
+    if (/android|iphone|ipad|ipod/i.test(ua)) return true;
+    // iPadOS 13+ reports as "Macintosh" but exposes touch support
+    if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+    return false;
+  }
+
   async function shareOrDownload(){
     if (entries.length === 0){
       showToast("Nothing to export yet");
       return;
     }
     var csv = toCSV();
-    var fileName = "flightlog_" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".csv";
+    var fileName = "log_" + new Date().toISOString().slice(0,19).replace(/[:T]/g,"-") + ".csv";
     var file;
     try{
       file = new File([csv], fileName, {type:"text/csv"});
@@ -685,12 +436,12 @@
       file = null;
     }
 
-    if (navigator.canShare && file && navigator.canShare({files:[file]})){
+    if (isMobileOrTablet() && navigator.canShare && file && navigator.canShare({files:[file]})){
       try{
         await navigator.share({
           files:[file],
           title: fileName,
-          text: "Flight log export"
+          text: "Log export"
         });
         return;
       }catch(err){
@@ -710,9 +461,43 @@
     showToast("CSV downloaded");
   }
 
-  document.getElementById("shareBtn").addEventListener("click", shareOrDownload);
+  /* ---------- hamburger menu ---------- */
+  var menuBtn = document.getElementById("menuBtn");
+  var menuPanel = document.getElementById("menuPanel");
+  function openMenu(){
+    menuPanel.classList.add("show");
+    menuBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu(){
+    menuPanel.classList.remove("show");
+    menuBtn.setAttribute("aria-expanded", "false");
+  }
+  menuBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (menuPanel.classList.contains("show")) closeMenu(); else openMenu();
+  });
+  document.addEventListener("click", function(e){
+    if (!menuPanel.classList.contains("show")) return;
+    if (menuPanel.contains(e.target) || e.target === menuBtn) return;
+    closeMenu();
+  });
+
+  document.getElementById("undoBtn").addEventListener("click", function(){
+    closeMenu();
+    if (entries.length === 0) return;
+    var removed = entries.pop();
+    saveEntries();
+    renderEntries();
+    showToast("Removed: " + removed.ctx);
+  });
+
+  document.getElementById("shareBtn").addEventListener("click", function(){
+    closeMenu();
+    shareOrDownload();
+  });
 
   document.getElementById("clearBtn").addEventListener("click", function(){
+    closeMenu();
     if (entries.length === 0) return;
     if (confirm("Clear all " + entries.length + " logged entries? This cannot be undone.")){
       entries = [];
@@ -722,25 +507,36 @@
     }
   });
 
-  document.getElementById("undoBtn").addEventListener("click", function(){
-    if (entries.length === 0) return;
-    var removed = entries.pop();
-    saveEntries();
-    renderEntries();
-    showToast("Removed: " + removed.ctx);
+  /* ---------- theme ---------- */
+  var THEME_KEY = "log_theme_v1";
+  var themeMetaEl = document.querySelector('meta[name="theme-color"]');
+  var themeToggleBtn = document.getElementById("themeToggleBtn");
+  var currentTheme;
+
+  function loadTheme(){
+    var saved;
+    try{ saved = localStorage.getItem(THEME_KEY); }catch(e){ saved = null; }
+    if (saved === "light" || saved === "dark") return saved;
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+  }
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    themeMetaEl.setAttribute("content", theme === "light" ? "#f2f3f6" : "#0b0d12");
+    themeToggleBtn.textContent = theme === "light" ? "Dark Mode" : "Light Mode";
+  }
+  currentTheme = loadTheme();
+  applyTheme(currentTheme);
+
+  themeToggleBtn.addEventListener("click", function(){
+    closeMenu();
+    currentTheme = (currentTheme === "light") ? "dark" : "light";
+    try{ localStorage.setItem(THEME_KEY, currentTheme); }catch(e){}
+    applyTheme(currentTheme);
   });
 
-  function tickClock(){
-    clockEl.textContent = new Date().toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  }
-  setInterval(tickClock, 1000);
-  tickClock();
-
   loadEntries();
-  loadMission();
-  loadDrone();
+  loadWidgetState();
   renderEntries();
-  renderMission();
   loadConfig();
 
   if ("serviceWorker" in navigator){
