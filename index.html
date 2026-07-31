@@ -26,6 +26,8 @@
 </div>
 
 <main>
+  <h1 id="appTitle" class="app-title"></h1>
+
   <div id="controls"></div>
 
   <div id="grid"></div>
@@ -63,6 +65,7 @@
   var widgetState = {};
   var widgetsConfig = [];
 
+  var appTitleEl = document.getElementById("appTitle");
   var controlsEl = document.getElementById("controls");
   var gridEl = document.getElementById("grid");
   var entriesEl = document.getElementById("entries");
@@ -369,6 +372,8 @@
   /* ---------- build grid + widgets from config ---------- */
   function buildGrid(config){
     document.title = config.appName || "Logger";
+    appTitleEl.textContent = config.appName || "";
+    appTitleEl.classList.toggle("hidden", !config.appName);
     gridEl.innerHTML = "";
 
     (config.buttons || []).forEach(function(btn){
@@ -397,7 +402,7 @@
   }
 
   function loadConfig(){
-    fetch("buttons.json", {cache:"no-store"})
+    fetch("config.json", {cache:"no-store"})
       .then(function(r){ return r.json(); })
       .then(function(config){ buildGrid(config); })
       .catch(function(){
@@ -409,7 +414,7 @@
           ],
           widgets:[]
         });
-        showToast("Using default buttons (buttons.json not found)");
+        showToast("Using default buttons (config.json not found)");
       });
   }
 

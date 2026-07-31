@@ -1,9 +1,10 @@
-const CACHE_NAME = "flightlog-cache-v2";
+const CACHE_NAME = "log-cache-v3";
 const ASSETS = [
   "./",
   "./index.html",
+  "./styles.css",
   "./manifest.json",
-  "./buttons.json",
+  "./config.json",
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png"

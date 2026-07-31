@@ -1,7 +1,7 @@
 {
-  "name": "Flight Log",
-  "short_name": "Flight Log",
-  "description": "Tap big buttons to log timestamped events to a CSV file.",
+  "name": "Time Logger",
+  "short_name": "Logger",
+  "description": "A modular PWA for logging timestamped events to a CSV file.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
