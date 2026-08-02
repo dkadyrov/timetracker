@@ -12,6 +12,19 @@
 <link rel="manifest" href="manifest.json">
 <title>Logger</title>
 <link rel="stylesheet" href="styles.css">
+<script>
+(function(){
+  function setAppHeight(){
+    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+  }
+  setAppHeight();
+  window.addEventListener("resize", setAppHeight);
+  window.addEventListener("orientationchange", setAppHeight);
+  if (window.visualViewport){
+    window.visualViewport.addEventListener("resize", setAppHeight);
+  }
+})();
+</script>
 </head>
 <body>
 
