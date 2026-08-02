@@ -20,9 +20,17 @@
   setAppHeight();
   window.addEventListener("resize", setAppHeight);
   window.addEventListener("orientationchange", setAppHeight);
+  window.addEventListener("pageshow", setAppHeight);
+  document.addEventListener("visibilitychange", setAppHeight);
   if (window.visualViewport){
     window.visualViewport.addEventListener("resize", setAppHeight);
   }
+  // iOS can report a shorter window.innerHeight for a moment right after
+  // a standalone PWA cold-launches, before it settles into the true
+  // fullscreen bounds — re-check a few times to catch that settle.
+  [0, 100, 300, 800].forEach(function(delay){
+    setTimeout(setAppHeight, delay);
+  });
 })();
 </script>
 </head>

@@ -337,8 +337,8 @@ main{
   display:flex;
   flex-direction:column;
   gap:8px;
-  height: 15vh;
-  flex: 0 0 15vh;
+  height: calc(var(--app-height, 100vh) * 0.15);
+  flex: 0 0 calc(var(--app-height, 100vh) * 0.15);
 }
 .logbar-head{
   display:flex;
@@ -400,7 +400,7 @@ main{
   background: var(--panel);
   width:100%;
   max-width:640px;
-  height:80vh;
+  height: calc(var(--app-height, 100vh) * 0.8);
   border-radius: 22px 22px 0 0;
   padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px) 16px;
   display:flex;
@@ -411,7 +411,7 @@ main{
 }
 #logOverlay.show #logOverlayCard{ transform: translateY(0); }
 @media (min-width:640px){
-  #logOverlayCard{ border-radius:22px; height:76vh; padding:16px; }
+  #logOverlayCard{ border-radius:22px; height: calc(var(--app-height, 100vh) * 0.76); padding:16px; }
 }
 #entriesDock{
   flex:1 1 auto;
