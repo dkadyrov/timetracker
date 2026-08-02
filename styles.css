@@ -25,8 +25,6 @@
   --control-bg: rgba(0,0,0,0.06);
   --control-bg-strong: rgba(0,0,0,0.08);
   --hover-bg: rgba(0,0,0,0.06);
-  --tile-shadow-1: rgba(20,22,30,0.12);
-  --tile-shadow-2: rgba(20,22,30,0.12);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation;}
 html{
@@ -117,7 +115,7 @@ main{
   flex:1;
   display:flex;
   flex-direction:column;
-  padding: calc(env(safe-area-inset-top) + 10px) var(--gap) var(--gap) var(--gap);
+  padding: 10px var(--gap) var(--gap) var(--gap);
   gap: var(--gap);
   min-height:0;
   overflow:hidden;
@@ -328,6 +326,8 @@ main{
   box-shadow: 0 2px 0 var(--tile-shadow-1), 0 4px 10px var(--tile-shadow-2);
 }
 .tile.flash{ filter: brightness(1.25); }
+:root[data-theme="light"] .tile{ box-shadow:none; }
+:root[data-theme="light"] .tile:active, :root[data-theme="light"] .tile.flash{ box-shadow:none; }
 
 #logbar{
   background: var(--panel);

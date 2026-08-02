@@ -24,8 +24,6 @@ Button tiles always render white text, so pick colors dark/saturated enough for 
 | Slate       | `#546e7a` |
 | Gray        | `#7f8c8d` |
 
-Note: `Yellow` (`#f1c40f`) has weaker contrast with white text than the others — use it sparingly, or only for short labels.
-
 Example:
 
 ```json
