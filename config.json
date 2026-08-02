@@ -9,6 +9,14 @@
       "min": 0
     },
     {
+      "key": "alphaStepper",
+      "type": "alphaStepper",
+      "title": "Alpha Stepper",
+      "start": "A",
+      "min": "A",
+      "max": "Z"
+    },
+    {
       "key": "selector",
       "type": "select",
       "title": "Selector",

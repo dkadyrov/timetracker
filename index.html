@@ -35,13 +35,33 @@
   <div id="logbar">
     <div class="logbar-head">
       <h2>Log</h2>
-      <div id="entryCount">0 entries</div>
+      <div class="logbar-tools">
+        <div class="entry-count">0 entries</div>
+        <button id="logExpandBtn" aria-label="Expand log" aria-haspopup="dialog" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+        </button>
+      </div>
     </div>
     <div id="entries"></div>
   </div>
 </main>
 
 <div id="toast"></div>
+
+<div id="logOverlay">
+  <div id="logOverlayCard">
+    <div class="logbar-head">
+      <h2>Log</h2>
+      <div class="logbar-tools">
+        <div class="entry-count">0 entries</div>
+        <button id="logCollapseBtn" aria-label="Collapse log">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+        </button>
+      </div>
+    </div>
+    <div id="entriesDock"></div>
+  </div>
+</div>
 
 <div id="modalOverlay">
   <div id="modalCard">
@@ -64,12 +84,18 @@
   var entries = [];
   var widgetState = {};
   var widgetsConfig = [];
+  var editingIndex = -1;
 
   var appTitleEl = document.getElementById("appTitle");
   var controlsEl = document.getElementById("controls");
   var gridEl = document.getElementById("grid");
   var entriesEl = document.getElementById("entries");
-  var entryCountEl = document.getElementById("entryCount");
+  var entryCountEls = document.querySelectorAll(".entry-count");
+  var entriesHome = entriesEl.parentNode;
+  var logOverlay = document.getElementById("logOverlay");
+  var entriesDock = document.getElementById("entriesDock");
+  var logExpandBtn = document.getElementById("logExpandBtn");
+  var logCollapseBtn = document.getElementById("logCollapseBtn");
   var toastEl = document.getElementById("toast");
 
   var modalOverlay = document.getElementById("modalOverlay");
@@ -120,14 +146,29 @@
   }
 
   /* ---------- rendering ---------- */
-  function renderEntries(){
-    entryCountEl.textContent = entries.length + (entries.length === 1 ? " entry" : " entries");
+  var EDIT_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>';
+  var DELETE_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+
+  function renderEntries(opts){
+    var preserveScroll = opts && opts.preserveScroll;
+    var prevScrollTop = preserveScroll ? entriesEl.scrollTop : null;
+
+    var countText = entries.length + (entries.length === 1 ? " entry" : " entries");
+    entryCountEls.forEach(function(el){ el.textContent = countText; });
     if (entries.length === 0){
+      editingIndex = -1;
       entriesEl.innerHTML = '<div class="empty-state">No entries yet — tap a button above to log a timestamp.</div>';
       return;
     }
+    var expanded = (entriesEl.parentNode === entriesDock);
     var html = "";
-    entries.forEach(function(e){
+    entries.forEach(function(e, idx){
+      if (idx === editingIndex){
+        html += '<div class="entry entry-editing" data-index="' + idx + '">' +
+                  '<input type="text" class="entry-edit-input" value="' + escapeHtml(e.ctx) + '" maxlength="200">' +
+                '</div>';
+        return;
+      }
       var subParts = [];
       widgetsConfig.forEach(function(w){
         var v = e.widgets && e.widgets[w.key];
@@ -136,19 +177,88 @@
           return;
         }
         if (v === undefined || v === "" || v === null) return;
-        subParts.push(w.type === "stepper" ? (w.title || w.key) + " " + v : v);
+        var isStepperLike = (w.type === "stepper" || w.type === "alphaStepper");
+        subParts.push(isStepperLike ? (w.title || w.key) + " " + v : v);
       });
-      html += '<div class="entry">' +
+      if (expanded) subParts.push(fmtDisplayTime(e.ts));
+
+      html += '<div class="entry" data-index="' + idx + '">' +
                 '<div class="meta">' +
                   '<span class="ctx">' + escapeHtml(e.ctx) + '</span>' +
                   '<span class="sub">' + escapeHtml(subParts.join(" · ")) + '</span>' +
-                '</div>' +
-                '<span class="ts">' + fmtDisplayTime(e.ts) + '</span>' +
-              '</div>';
+                '</div>';
+      if (expanded){
+        html += '<div class="entry-actions">' +
+                  '<button type="button" class="entry-edit" aria-label="Edit entry">' + EDIT_ICON + '</button>' +
+                  '<button type="button" class="entry-delete" aria-label="Delete entry">' + DELETE_ICON + '</button>' +
+                '</div>';
+      } else {
+        html += '<span class="ts">' + fmtDisplayTime(e.ts) + '</span>';
+      }
+      html += '</div>';
     });
     entriesEl.innerHTML = html;
-    entriesEl.scrollTop = entriesEl.scrollHeight;
+
+    if (preserveScroll){
+      entriesEl.scrollTop = prevScrollTop;
+    } else {
+      entriesEl.scrollTop = entriesEl.scrollHeight;
+    }
+
+    if (editingIndex !== -1){
+      var input = entriesEl.querySelector(".entry-edit-input");
+      if (input){ input.focus(); input.select(); }
+    }
   }
+
+  function commitEdit(input){
+    var idx = editingIndex;
+    if (idx === -1) return;
+    editingIndex = -1;
+    var text = input.value.trim();
+    if (text && entries[idx]){
+      entries[idx].ctx = text;
+      saveEntries();
+    }
+    renderEntries({preserveScroll:true});
+  }
+
+  entriesEl.addEventListener("click", function(e){
+    var editBtn = e.target.closest(".entry-edit");
+    var delBtn = e.target.closest(".entry-delete");
+    if (editBtn){
+      var editEntry = editBtn.closest(".entry");
+      editingIndex = parseInt(editEntry.dataset.index, 10);
+      renderEntries({preserveScroll:true});
+      return;
+    }
+    if (delBtn){
+      var delEntry = delBtn.closest(".entry");
+      var idx = parseInt(delEntry.dataset.index, 10);
+      if (confirm("Delete this entry?")){
+        entries.splice(idx, 1);
+        saveEntries();
+        if (editingIndex === idx) editingIndex = -1;
+        renderEntries({preserveScroll:true});
+        showToast("Entry deleted");
+      }
+    }
+  });
+  entriesEl.addEventListener("keydown", function(e){
+    if (!e.target.classList.contains("entry-edit-input")) return;
+    if (e.key === "Enter"){
+      e.preventDefault();
+      e.target.blur();
+    } else if (e.key === "Escape"){
+      e.preventDefault();
+      editingIndex = -1;
+      renderEntries({preserveScroll:true});
+    }
+  });
+  entriesEl.addEventListener("focusout", function(e){
+    if (!e.target.classList.contains("entry-edit-input")) return;
+    commitEdit(e.target);
+  });
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(c){
@@ -163,11 +273,12 @@
     showToast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 1800);
   }
 
-  /* ---------- widgets (stepper / select / toggle / text) ---------- */
+  /* ---------- widgets (stepper / alphaStepper / select / toggle / text) ---------- */
   function initWidgetDefaults(widgets){
     widgets.forEach(function(w){
       if (widgetState[w.key] !== undefined) return;
       if (w.type === "stepper") widgetState[w.key] = (w.start !== undefined ? w.start : 1);
+      else if (w.type === "alphaStepper") widgetState[w.key] = (w.start !== undefined ? String(w.start).toUpperCase() : "A");
       else if (w.type === "toggle") widgetState[w.key] = !!w.default;
       else widgetState[w.key] = "";
     });
@@ -203,6 +314,48 @@
       var next = (widgetState[w.key] || 0) + step;
       if (w.max !== undefined) next = Math.min(w.max, next);
       widgetState[w.key] = next;
+      saveWidgetState();
+      render();
+    });
+
+    wrap.appendChild(dec);
+    wrap.appendChild(val);
+    wrap.appendChild(inc);
+    tile.appendChild(wrap);
+    render();
+  }
+
+  function buildAlphaStepperWidget(tile, w){
+    var wrap = document.createElement("div");
+    wrap.className = "stepper";
+
+    var dec = document.createElement("button");
+    dec.type = "button";
+    dec.textContent = "–";
+    dec.setAttribute("aria-label", "Decrease " + (w.title || w.key));
+
+    var val = document.createElement("div");
+    val.className = "stepper-value";
+
+    var inc = document.createElement("button");
+    inc.type = "button";
+    inc.textContent = "+";
+    inc.setAttribute("aria-label", "Increase " + (w.title || w.key));
+
+    var minChar = String(w.min || "A").toUpperCase().charCodeAt(0);
+    var maxChar = String(w.max || "Z").toUpperCase().charCodeAt(0);
+
+    function render(){ val.textContent = widgetState[w.key]; }
+
+    dec.addEventListener("click", function(){
+      var code = String(widgetState[w.key] || "A").toUpperCase().charCodeAt(0) - 1;
+      widgetState[w.key] = String.fromCharCode(Math.max(minChar, code));
+      saveWidgetState();
+      render();
+    });
+    inc.addEventListener("click", function(){
+      var code = String(widgetState[w.key] || "A").toUpperCase().charCodeAt(0) + 1;
+      widgetState[w.key] = String.fromCharCode(Math.min(maxChar, code));
       saveWidgetState();
       render();
     });
@@ -324,6 +477,7 @@
       tile.appendChild(caption);
 
       if (w.type === "stepper") buildStepperWidget(tile, w);
+      else if (w.type === "alphaStepper") buildAlphaStepperWidget(tile, w);
       else if (w.type === "select") buildSelectWidget(tile, w);
       else if (w.type === "toggle") buildToggleWidget(tile, w);
       else if (w.type === "text") buildTextWidget(tile, w);
@@ -465,6 +619,29 @@
     setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
     showToast("CSV downloaded");
   }
+
+  /* ---------- log expand/collapse (hover window) ---------- */
+  function openLog(){
+    entriesDock.appendChild(entriesEl);
+    renderEntries();
+    logOverlay.classList.add("show");
+    logExpandBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeLog(){
+    if (editingIndex !== -1){
+      var input = entriesEl.querySelector(".entry-edit-input");
+      if (input) commitEdit(input);
+    }
+    entriesHome.appendChild(entriesEl);
+    renderEntries();
+    logOverlay.classList.remove("show");
+    logExpandBtn.setAttribute("aria-expanded", "false");
+  }
+  logExpandBtn.addEventListener("click", openLog);
+  logCollapseBtn.addEventListener("click", closeLog);
+  logOverlay.addEventListener("click", function(e){
+    if (e.target === logOverlay) closeLog();
+  });
 
   /* ---------- hamburger menu ---------- */
   var menuBtn = document.getElementById("menuBtn");

@@ -130,9 +130,14 @@ main{
 
 /* ---------- Control bar: config-driven widgets ---------- */
 #controls{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display:flex;
+  flex-direction:row;
   gap: var(--gap);
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type: x proximity;
+  padding-bottom:2px;
 }
 #controls:empty{ display:none; }
 .control-tile{
@@ -144,6 +149,9 @@ main{
   gap:6px;
   justify-content:center;
   min-height: 60px;
+  flex: 1 1 160px;
+  min-width:160px;
+  scroll-snap-align:start;
 }
 .control-tile .caption{
   font-size: clamp(11px, 1.6vw, 13px);
@@ -318,15 +326,16 @@ main{
   display:flex;
   flex-direction:column;
   gap:8px;
-  height: 26vh;
-  flex: 0 0 26vh;
+  height: 15vh;
+  flex: 0 0 15vh;
 }
-#logbar .logbar-head{
+.logbar-head{
   display:flex;
   align-items:center;
   justify-content:space-between;
+  flex:none;
 }
-#logbar h2{
+.logbar-head h2{
   margin:0;
   font-size:14px;
   color:var(--muted);
@@ -334,10 +343,70 @@ main{
   text-transform:uppercase;
   letter-spacing:0.06em;
 }
-#entryCount{
+.logbar-tools{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.entry-count{
   color:var(--muted);
   font-size:13px;
   font-variant-numeric: tabular-nums;
+}
+#logExpandBtn, #logCollapseBtn{
+  border:none;
+  background: var(--control-bg);
+  color:var(--text);
+  width:26px;
+  height:26px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:none;
+}
+#logExpandBtn:active, #logCollapseBtn:active{ filter:brightness(1.3); }
+
+/* ---------- log overlay (hover window) ---------- */
+#logOverlay{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,0.55);
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  z-index:90;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .18s ease;
+}
+#logOverlay.show{ opacity:1; pointer-events:auto; }
+@media (min-width:640px){
+  #logOverlay{ align-items:center; }
+}
+#logOverlayCard{
+  background: var(--panel);
+  width:100%;
+  max-width:640px;
+  height:80vh;
+  border-radius: 22px 22px 0 0;
+  padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px) 16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  transform: translateY(16px);
+  transition: transform .18s ease;
+}
+#logOverlay.show #logOverlayCard{ transform: translateY(0); }
+@media (min-width:640px){
+  #logOverlayCard{ border-radius:22px; height:76vh; padding:16px; }
+}
+#entriesDock{
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
 }
 #entries{
   overflow-y:auto;
@@ -362,6 +431,43 @@ main{
 .entry .ctx{ font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .entry .sub{ color:var(--muted); font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .entry .ts{ color:var(--muted); font-variant-numeric: tabular-nums; font-size:12.5px; flex:none; }
+
+.entry-actions{
+  display:none;
+  gap:6px;
+  flex:none;
+}
+#entriesDock .entry-actions{ display:flex; }
+.entry-edit, .entry-delete{
+  border:none;
+  background: var(--control-bg);
+  width:26px;
+  height:26px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex:none;
+}
+.entry-edit{ color: var(--text); }
+.entry-delete{ color: var(--danger); }
+.entry-edit:active, .entry-delete:active{ filter:brightness(1.3); }
+
+.entry-editing{
+  padding:4px 10px;
+}
+.entry-edit-input{
+  width:100%;
+  border:none;
+  background:transparent;
+  color:var(--text);
+  font-size:14px;
+  font-weight:700;
+  font-family:inherit;
+  padding:6px 0;
+}
+.entry-edit-input:focus{ outline:none; }
 .empty-state{
   color:var(--muted);
   font-size:14px;
