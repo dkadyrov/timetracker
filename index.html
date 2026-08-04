@@ -22,7 +22,16 @@
   <button id="shareBtn" role="menuitem">Share / Save CSV</button>
   <button id="clearBtn" class="danger" role="menuitem">Clear Log</button>
   <div class="menu-divider"></div>
-  <button id="themeToggleBtn" role="menuitem">Light Mode</button>
+  <button id="themeMenuBtn" role="menuitem" aria-haspopup="true" aria-expanded="false">
+    <span>Theme</span>
+    <span class="menu-item-value"><span id="themeMenuValue">Dark</span> &#8250;</span>
+  </button>
+</div>
+
+<div id="themePanel" role="menu">
+  <button class="theme-option" data-theme-value="light" role="menuitem">Light</button>
+  <button class="theme-option" data-theme-value="dark" role="menuitem">Dark</button>
+  <button class="theme-option" data-theme-value="alex" role="menuitem">Alex Theme</button>
 </div>
 
 <main>
@@ -533,7 +542,7 @@
     (config.buttons || []).forEach(function(btn){
       var el = document.createElement("button");
       el.className = "tile";
-      el.style.background = btn.color || "#3498db";
+      el.style.setProperty("--tile-color", btn.color || "#3498db");
       el.textContent = btn.label;
       el.addEventListener("click", function(){
         logEntry(btn.context || btn.label, el);
@@ -544,7 +553,7 @@
     // Custom text tile — always added last
     var customEl = document.createElement("button");
     customEl.className = "tile";
-    customEl.style.background = config.customButtonColor || "#546e7a";
+    customEl.style.setProperty("--tile-color", config.customButtonColor || "#546e7a");
     customEl.textContent = config.customButtonLabel || "Custom…";
     customEl.addEventListener("click", openModal);
     gridEl.appendChild(customEl);
@@ -659,9 +668,12 @@
     if (menuPanel.classList.contains("show")) closeMenu(); else openMenu();
   });
   document.addEventListener("click", function(e){
-    if (!menuPanel.classList.contains("show")) return;
-    if (menuPanel.contains(e.target) || e.target === menuBtn) return;
-    closeMenu();
+    if (menuPanel.classList.contains("show") && !menuPanel.contains(e.target) && e.target !== menuBtn){
+      closeMenu();
+    }
+    if (themePanel.classList.contains("show") && !themePanel.contains(e.target) && e.target !== menuBtn){
+      closeThemePanel();
+    }
   });
 
   document.getElementById("undoBtn").addEventListener("click", function(){
@@ -691,29 +703,53 @@
 
   /* ---------- theme ---------- */
   var THEME_KEY = "log_theme_v1";
+  var THEME_ORDER = ["light", "dark", "alex"];
+  var THEME_META_COLOR = { dark:"#000000", light:"#ffffff", alex:"#000000" };
+  var THEME_LABEL = { dark:"Dark", light:"Light", alex:"Alex Theme" };
   var themeMetaEl = document.querySelector('meta[name="theme-color"]');
-  var themeToggleBtn = document.getElementById("themeToggleBtn");
+  var themeMenuBtn = document.getElementById("themeMenuBtn");
+  var themeMenuValueEl = document.getElementById("themeMenuValue");
+  var themePanel = document.getElementById("themePanel");
+  var themeOptionBtns = document.querySelectorAll(".theme-option");
   var currentTheme;
 
   function loadTheme(){
     var saved;
     try{ saved = localStorage.getItem(THEME_KEY); }catch(e){ saved = null; }
-    if (saved === "light" || saved === "dark") return saved;
+    if (THEME_ORDER.indexOf(saved) !== -1) return saved;
     return (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
   }
   function applyTheme(theme){
     document.documentElement.setAttribute("data-theme", theme);
-    themeMetaEl.setAttribute("content", theme === "light" ? "#f2f3f6" : "#0b0d12");
-    themeToggleBtn.textContent = theme === "light" ? "Dark Mode" : "Light Mode";
+    themeMetaEl.setAttribute("content", THEME_META_COLOR[theme]);
+    themeMenuValueEl.textContent = THEME_LABEL[theme];
+    themeOptionBtns.forEach(function(btn){
+      btn.classList.toggle("active", btn.dataset.themeValue === theme);
+    });
   }
   currentTheme = loadTheme();
   applyTheme(currentTheme);
 
-  themeToggleBtn.addEventListener("click", function(){
+  function openThemePanel(){
+    themePanel.classList.add("show");
+    themeMenuBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeThemePanel(){
+    themePanel.classList.remove("show");
+    themeMenuBtn.setAttribute("aria-expanded", "false");
+  }
+  themeMenuBtn.addEventListener("click", function(e){
+    e.stopPropagation();
     closeMenu();
-    currentTheme = (currentTheme === "light") ? "dark" : "light";
-    try{ localStorage.setItem(THEME_KEY, currentTheme); }catch(e){}
-    applyTheme(currentTheme);
+    openThemePanel();
+  });
+  themeOptionBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      currentTheme = btn.dataset.themeValue;
+      try{ localStorage.setItem(THEME_KEY, currentTheme); }catch(e){}
+      applyTheme(currentTheme);
+      closeThemePanel();
+    });
   });
 
   loadEntries();
