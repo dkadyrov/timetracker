@@ -1,13 +1,16 @@
-const CACHE_NAME = "log-cache-v3";
+const CACHE_NAME = "log-cache-v5";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./manifest.json",
   "./config.json",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./images/apple-touch-icon.png",
+  "./images/favicon.ico",
+  "./images/favicon-16x16.png",
+  "./images/favicon-32x32.png",
+  "./images/android-chrome-192x192.png",
+  "./images/android-chrome-512x512.png"
 ];
 
 self.addEventListener("install", (event) => {
