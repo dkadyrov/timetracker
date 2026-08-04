@@ -535,6 +535,30 @@
   });
 
   /* ---------- build grid + widgets from config ---------- */
+  function buildTextboxTile(btn){
+    var wrap = document.createElement("div");
+    wrap.className = "tile textbox-tile";
+    wrap.style.setProperty("--tile-color", btn.color || "#2c3e50");
+
+    var input = document.createElement("input");
+    input.type = "text";
+    input.className = "textbox-tile-input";
+    input.placeholder = btn.placeholder || btn.label || "Type and press Enter…";
+    input.maxLength = btn.maxlength || 200;
+
+    input.addEventListener("keydown", function(e){
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      logEntry(text, wrap);
+      input.value = "";
+    });
+
+    wrap.appendChild(input);
+    return wrap;
+  }
+
   function buildGrid(config){
     document.title = config.appName || "Logger";
     appTitleEl.textContent = config.appName || "";
@@ -542,23 +566,23 @@
     gridEl.innerHTML = "";
 
     (config.buttons || []).forEach(function(btn){
+      if (btn.type === "textbox"){
+        gridEl.appendChild(buildTextboxTile(btn));
+        return;
+      }
       var el = document.createElement("button");
       el.className = "tile";
       el.style.setProperty("--tile-color", btn.color || "#3498db");
       el.textContent = btn.label;
-      el.addEventListener("click", function(){
-        logEntry(btn.context || btn.label, el);
-      });
+      if (btn.type === "custom"){
+        el.addEventListener("click", openModal);
+      } else {
+        el.addEventListener("click", function(){
+          logEntry(btn.context || btn.label, el);
+        });
+      }
       gridEl.appendChild(el);
     });
-
-    // Custom text tile — always added last
-    var customEl = document.createElement("button");
-    customEl.className = "tile";
-    customEl.style.setProperty("--tile-color", config.customButtonColor || "#546e7a");
-    customEl.textContent = config.customButtonLabel || "Custom…";
-    customEl.addEventListener("click", openModal);
-    gridEl.appendChild(customEl);
 
     widgetsConfig = config.widgets || [];
     initWidgetDefaults(widgetsConfig);

@@ -95,8 +95,13 @@
       "label": "Button",
       "context": "Button",
       "color": "#2ecc71"
+    },
+    {
+      "type": "textbox",
+      "label": "Quick note",
+      "placeholder": "Type and press Enter…",
+      "color": "#2c3e50",
+      "maxlength": 200
     }
-  ],
-  "customButtonLabel": "Custom…",
-  "customButtonColor": "#546e7a"
+  ]
 }

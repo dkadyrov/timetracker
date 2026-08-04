@@ -340,6 +340,27 @@ main{
   border-color: var(--text);
 }
 .tile.flash{ filter: brightness(1.25); }
+
+.textbox-tile{
+  grid-column: 1 / -1;
+  grid-row: span 2;
+  cursor:text;
+  padding: 14px 18px;
+}
+.textbox-tile-input{
+  width:100%;
+  height:100%;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:#fff;
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight:800;
+  text-align:center;
+  font-family:inherit;
+}
+.textbox-tile-input::placeholder{ color: rgba(255,255,255,0.65); font-weight:700; }
+
 .control-tile,
 #logbar,
 #menuPanel,
