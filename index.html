@@ -28,6 +28,7 @@
     <span>Theme</span>
     <span class="menu-item-value"><span id="themeMenuValue">Dark</span> &#8250;</span>
   </button>
+  <button id="updateAppBtn" role="menuitem">Update App</button>
 </div>
 
 <div id="themePanel" role="menu">
@@ -304,19 +305,23 @@
     dec.textContent = "–";
     dec.setAttribute("aria-label", "Decrease " + (w.title || w.key));
 
-    var val = document.createElement("div");
+    var val = document.createElement("input");
+    val.type = "number";
+    val.inputMode = "numeric";
     val.className = "stepper-value";
+    val.setAttribute("aria-label", w.title || w.key);
 
     var inc = document.createElement("button");
     inc.type = "button";
     inc.textContent = "+";
     inc.setAttribute("aria-label", "Increase " + (w.title || w.key));
 
-    function render(){ val.textContent = widgetState[w.key]; }
+    function render(){ val.value = widgetState[w.key]; }
 
-    var step = w.step || 1;
+    var min = (w.min !== undefined) ? w.min : 0;
+    var step = (w.skip !== undefined) ? w.skip : (w.step || 1);
+
     dec.addEventListener("click", function(){
-      var min = (w.min !== undefined) ? w.min : 0;
       widgetState[w.key] = Math.max(min, (widgetState[w.key] || 0) - step);
       saveWidgetState();
       render();
@@ -327,6 +332,26 @@
       widgetState[w.key] = next;
       saveWidgetState();
       render();
+    });
+
+    function commitManualEntry(){
+      var parsed = parseInt(val.value, 10);
+      if (isNaN(parsed)){
+        render();
+        return;
+      }
+      if (w.max !== undefined) parsed = Math.min(w.max, parsed);
+      parsed = Math.max(min, parsed);
+      widgetState[w.key] = parsed;
+      saveWidgetState();
+      render();
+    }
+    val.addEventListener("change", commitManualEntry);
+    val.addEventListener("keydown", function(e){
+      if (e.key === "Enter"){
+        e.preventDefault();
+        val.blur();
+      }
     });
 
     wrap.appendChild(dec);
@@ -725,6 +750,24 @@
       renderEntries();
       showToast("Log cleared");
     }
+  });
+
+  document.getElementById("updateAppBtn").addEventListener("click", function(){
+    closeMenu();
+    showToast("Updating…");
+    var clearCaches = ("caches" in window)
+      ? caches.keys().then(function(keys){
+          return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+        })
+      : Promise.resolve();
+    clearCaches.then(function(){
+      if (!("serviceWorker" in navigator)) return;
+      return navigator.serviceWorker.getRegistrations().then(function(regs){
+        return Promise.all(regs.map(function(r){ return r.unregister(); }));
+      });
+    }).catch(function(){}).then(function(){
+      location.href = location.pathname + "?refresh=" + Date.now();
+    });
   });
 
   /* ---------- theme ---------- */

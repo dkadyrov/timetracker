@@ -6,7 +6,8 @@
       "type": "stepper",
       "title": "Stepper",
       "start": 1,
-      "min": 0
+      "min": 0,
+      "skip": 2
     },
     {
       "key": "alphaStepper",
