@@ -1,5 +1,5 @@
 {
-  "appName": "Flight Log",
+  "appName": "Timestamper",
   "widgets": [
     {
       "key": "stepper",

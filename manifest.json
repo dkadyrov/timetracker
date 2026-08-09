@@ -1,6 +1,6 @@
 {
-  "name": "Time Logger",
-  "short_name": "Logger",
+  "name": "Timestamper",
+  "short_name": "Timestamper",
   "description": "A modular PWA for logging timestamped events to a CSV file.",
   "start_url": "./index.html",
   "scope": "./",

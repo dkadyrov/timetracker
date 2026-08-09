@@ -1,4 +1,4 @@
-# Time Logger
+# Timestamper
 
 A modular, config-driven PWA for tapping big colored buttons to log timestamped events to a CSV file. Buttons, top-of-screen widgets (steppers, dropdowns, toggles, text fields), and the app title are all defined in [config.json](config.json) — no code changes needed to customize the dashboard.
 
