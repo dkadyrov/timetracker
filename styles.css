@@ -160,6 +160,8 @@ main{
   -webkit-overflow-scrolling:touch;
   scroll-snap-type: x proximity;
   padding-bottom:2px;
+  min-width:0;
+  max-width:100%;
 }
 #controls:empty{ display:none; }
 .control-tile{
@@ -168,12 +170,12 @@ main{
   padding: 10px 14px;
   display:flex;
   flex-direction:column;
-  align-items:stretch;
+  align-items:flex-start;
   gap:6px;
   justify-content:center;
   min-height: 60px;
-  flex: 1 0 auto;
-  min-width:110px;
+  flex: 0 1 auto;
+  min-width: max(110px, min-content);
   scroll-snap-align:start;
 }
 .control-tile .caption{
@@ -188,6 +190,7 @@ main{
 .stepper{
   display:flex;
   align-items:center;
+  align-self:center;
   gap:10px;
 }
 .stepper button{
@@ -205,8 +208,8 @@ main{
 }
 .stepper button:active{ filter:brightness(1.3); }
 .stepper-value{
-  flex:1;
-  min-width: 3ch;
+  flex:none;
+  width: 3ch;
   text-align:center;
   font-size: clamp(20px, 3vw, 26px);
   font-weight:800;
@@ -230,6 +233,7 @@ main{
 .control-tile select{
   appearance:none;
   -webkit-appearance:none;
+  align-self:center;
   width:auto;
   height:40px;
   border:none;
@@ -253,6 +257,7 @@ main{
 .widget-locked{
   display:flex;
   align-items:center;
+  align-self:center;
   justify-content:space-between;
   gap:8px;
   height:40px;
@@ -261,6 +266,8 @@ main{
   padding: 0 10px 0 12px;
 }
 .widget-locked .name{
+  min-width:0;
+  max-width:140px;
   font-size: clamp(15px, 2.2vw, 18px);
   font-weight:800;
   overflow:hidden;
@@ -282,6 +289,7 @@ main{
 
 /* toggle widget */
 .toggle-btn{
+  align-self:center;
   height:40px;
   padding: 0 18px;
   border:none;
