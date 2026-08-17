@@ -13,19 +13,8 @@
   --radius:22px;
   --gap: clamp(10px, 2vw, 16px);
 }
-:root[data-theme="light"]{
-  --bg:#ffffff;
-  --panel:#ffffff;
-  --panel-2:#f0f0f0;
-  --text:#000000;
-  --muted:#2b2b2b;
-  --accent:#0d47c4;
-  --danger:#b3261e;
-  --control-bg: rgba(0,0,0,0.09);
-  --control-bg-strong: rgba(0,0,0,0.13);
-  --hover-bg: rgba(0,0,0,0.09);
-  --outline: rgba(0,0,0,0.4);
-}
+/* Theme colors above are the built-in fallback (Dark); config.json's "themes"
+   array overrides these custom properties inline via JS once it loads. */
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation;}
 html,body{
   margin:0;
@@ -62,6 +51,25 @@ body{
   box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 #menuBtn:active{ filter:brightness(1.3); }
+
+.gps-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background: var(--muted);
+  flex:none;
+}
+#gpsStatus.searching .gps-dot{
+  background:#f1c40f;
+  animation: gps-pulse 1s ease-in-out infinite;
+}
+#gpsStatus.good .gps-dot{ background:#2ecc71; }
+#gpsStatus.poor .gps-dot{ background:#e67e22; }
+#gpsStatus.error .gps-dot{ background:var(--danger); }
+@keyframes gps-pulse{
+  0%, 100%{ opacity:1; }
+  50%{ opacity:0.35; }
+}
 
 #menuPanel, #themePanel{
   position:fixed;
@@ -243,16 +251,13 @@ main{
   font-size: clamp(16px, 2.2vw, 18px);
   font-weight:700;
   padding: 0 34px 0 12px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-image: var(--select-arrow, url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M7 10l5 5 5-5z'/></svg>"));
   background-repeat:no-repeat;
   background-position: right 10px center;
   background-size: 18px;
 }
 .control-tile select:focus{ outline: 2px solid var(--accent); }
 .control-tile select option{ color:#000; background:#fff; }
-:root[data-theme="light"] .control-tile select{
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2314161c'><path d='M7 10l5 5 5-5z'/></svg>");
-}
 
 .widget-locked{
   display:flex;
@@ -392,13 +397,15 @@ main{
 .entry{
   border:1.5px solid var(--outline);
 }
-:root[data-theme="alex"] .tile{
+/* "outline" tile style: tiles render as outlined panels instead of filled color
+   blocks. Set per-theme via the "tileStyle" field in config.json's themes array. */
+:root[data-tile-style="outline"] .tile{
   background: var(--panel-2);
-  color: #fff;
+  color: var(--text);
   border-width: 6px;
   border-color: var(--tile-color, var(--accent));
 }
-:root[data-theme="alex"] .tile:active, :root[data-theme="alex"] .tile.flash{
+:root[data-tile-style="outline"] .tile:active, :root[data-tile-style="outline"] .tile.flash{
   background: var(--control-bg-strong);
   filter:none;
 }

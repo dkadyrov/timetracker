@@ -1,5 +1,62 @@
 {
   "appName": "Timestamper",
+  "themes": [
+    {
+      "id": "light",
+      "label": "Light",
+      "metaColor": "#ffffff",
+      "colors": {
+        "bg": "#ffffff",
+        "panel": "#ffffff",
+        "panel2": "#f0f0f0",
+        "text": "#000000",
+        "muted": "#2b2b2b",
+        "accent": "#0d47c4",
+        "danger": "#b3261e",
+        "controlBg": "rgba(0,0,0,0.09)",
+        "controlBgStrong": "rgba(0,0,0,0.13)",
+        "hoverBg": "rgba(0,0,0,0.09)",
+        "outline": "rgba(0,0,0,0.4)"
+      }
+    },
+    {
+      "id": "dark",
+      "label": "Dark",
+      "metaColor": "#000000",
+      "colors": {
+        "bg": "#000000",
+        "panel": "#0d0d0d",
+        "panel2": "#1a1a1a",
+        "text": "#ffffff",
+        "muted": "#cfcfcf",
+        "accent": "#5b8cff",
+        "danger": "#ff5449",
+        "controlBg": "rgba(255,255,255,0.16)",
+        "controlBgStrong": "rgba(255,255,255,0.22)",
+        "hoverBg": "rgba(255,255,255,0.14)",
+        "outline": "rgba(255,255,255,0.4)"
+      }
+    },
+    {
+      "id": "alex",
+      "label": "Alex Theme",
+      "metaColor": "#000000",
+      "tileStyle": "outline",
+      "colors": {
+        "bg": "#000000",
+        "panel": "#0d0d0d",
+        "panel2": "#1a1a1a",
+        "text": "#ffffff",
+        "muted": "#cfcfcf",
+        "accent": "#5b8cff",
+        "danger": "#ff5449",
+        "controlBg": "rgba(255,255,255,0.16)",
+        "controlBgStrong": "rgba(255,255,255,0.22)",
+        "hoverBg": "rgba(255,255,255,0.14)",
+        "outline": "rgba(255,255,255,0.4)"
+      }
+    }
+  ],
   "widgets": [
     {
       "key": "stepper",
